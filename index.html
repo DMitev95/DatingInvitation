@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>💕 Специален Въпрос за Дони</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #ffecd2, #fbc2eb, #a18cd1);
+      background-size: 400% 400%;
+      animation: bgShift 14s ease infinite;
+    }
+
+    @keyframes bgShift {
+      0%   { background-position: 0%   50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0%   50%; }
+    }
+
+    /* ─── Page system ─────────────────────────────── */
+    .page {
+      display: none;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      position: relative;
+    }
+    .page.active { display: flex; }
+
+    /* ─── Glass card ──────────────────────────────── */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 2rem;
+      box-shadow:
+        0 20px 60px rgba(236, 64, 122, 0.22),
+        0 8px 30px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+    }
+
+    /* ─── Animations ──────────────────────────────── */
+    @keyframes heartPulse {
+      0%, 100% { transform: scale(1); }
+      20%       { transform: scale(1.3); }
+      40%       { transform: scale(1.05); }
+      60%       { transform: scale(1.22); }
+    }
+    @keyframes floatBounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-12px); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(36px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pageIn {
+      from { opacity: 0; transform: scale(0.95) translateY(18px); }
+      to   { opacity: 1; transform: scale(1)    translateY(0); }
+    }
+    @keyframes floatParticle {
+      0%   { transform: translateY(110vh) scale(0) rotate(0deg);   opacity: 0; }
+      8%   { opacity: 0.75; transform: scale(1) rotate(20deg); }
+      92%  { opacity: 0.45; }
+      100% { transform: translateY(-80px)  scale(0.7) rotate(360deg); opacity: 0; }
+    }
+    @keyframes confettiFall {
+      0%  { transform: translateY(-40px) rotate(0deg); opacity: 1; }
+      85% { opacity: 0.8; }
+      100%{ transform: translateY(110vh) rotate(760deg) scale(0.4); opacity: 0; }
+    }
+    @keyframes checkPop {
+      0%   { transform: scale(0); }
+      70%  { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .heart-pulse   { animation: heartPulse  1.8s ease-in-out infinite; }
+    .float-bounce  { animation: floatBounce 2.5s ease-in-out infinite; }
+    .fade-in-up    { animation: fadeInUp    0.7s ease-out both; }
+    .page-in       { animation: pageIn      0.5s ease-out both; }
+    .particle      {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      animation: floatParticle linear infinite;
+      user-select: none;
+    }
+    .confetti-piece {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      animation: confettiFall linear forwards;
+    }
+
+    /* ─── Buttons ─────────────────────────────────── */
+    .btn-yes {
+      background: linear-gradient(135deg, #ec407a 0%, #f48fb1 100%);
+      color: white;
+      font-weight: 900;
+      font-size: 1.25rem;
+      padding: 1rem 3.2rem;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 28px rgba(236, 64, 122, 0.45);
+      letter-spacing: 0.02em;
+    }
+    .btn-yes:hover {
+      transform: translateY(-4px) scale(1.06);
+      box-shadow: 0 16px 38px rgba(236, 64, 122, 0.6);
+    }
+    .btn-yes:active { transform: scale(0.97); }
+
+    .btn-next {
+      background: linear-gradient(135deg, #ec407a 0%, #f06292 100%);
+      color: white;
+      font-weight: 800;
+      font-size: 1.05rem;
+      padding: 0.85rem 2.6rem;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 6px 22px rgba(236, 64, 122, 0.4);
+      font-family: 'Nunito', sans-serif;
+    }
+    .btn-next:hover {
+      transform: translateY(-3px) scale(1.04);
+      box-shadow: 0 12px 30px rgba(236, 64, 122, 0.55);
+    }
+    .btn-next:active { transform: scale(0.97); }
+
+    /* ─── No button ───────────────────────────────── */
+    #no-btn {
+      position: fixed;
+      z-index: 9999;
+      background: #eeeeee;
+      color: #9e9e9e;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 0.75rem 1.85rem;
+      border-radius: 50px;
+      border: 2px solid #e0e0e0;
+      cursor: not-allowed;
+      display: none;
+      visibility: hidden;
+      user-select: none;
+      font-family: 'Nunito', sans-serif;
+      transition: left 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  top  0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      white-space: nowrap;
+    }
+
+    /* ─── Food cards ──────────────────────────────── */
+    .food-card {
+      background: white;
+      border: 3px solid #f8bbd0;
+      border-radius: 1.25rem;
+      padding: 1.25rem 0.75rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .food-card:hover {
+      border-color: #ec407a;
+      transform: translateY(-6px) scale(1.04);
+      box-shadow: 0 14px 28px rgba(236, 64, 122, 0.22);
+    }
+    .food-card.selected {
+      border-color: #ec407a;
+      background: linear-gradient(135deg, #fce4ec, #ffd6e7);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(236, 64, 122, 0.3);
+    }
+    .food-card .check-badge {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 22px; height: 22px;
+      background: #ec407a;
+      color: white;
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 900;
+      animation: checkPop 0.3s ease-out both;
+    }
+    .food-card.selected .check-badge { display: flex; }
+
+    /* ─── Date / Time inputs ──────────────────────── */
+    .date-input {
+      width: 100%;
+      border: 2px solid #f48fb1;
+      border-radius: 0.75rem;
+      padding: 0.85rem 1.1rem;
+      font-size: 1.05rem;
+      font-family: 'Nunito', sans-serif;
+      outline: none;
+      color: #333;
+      background: white;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .date-input:focus {
+      border-color: #ec407a;
+      box-shadow: 0 0 0 3px rgba(236, 64, 122, 0.15);
+    }
+    .date-input.shake { border-color: #ef5350; animation: shakeX 0.4s ease; }
+    @keyframes shakeX {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-6px); }
+      75%      { transform: translateX(6px); }
+    }
+
+    /* ─── Summary rows ────────────────────────────── */
+    .summary-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem 1rem;
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 2px 12px rgba(236, 64, 122, 0.09);
+    }
+
+    /* ─── Toast ───────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(236, 64, 122, 0.92);
+      color: white;
+      padding: 0.75rem 1.6rem;
+      border-radius: 50px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      z-index: 99999;
+      box-shadow: 0 8px 28px rgba(236, 64, 122, 0.35);
+      animation: fadeInUp 0.3s ease-out both;
+      pointer-events: none;
+    }
+
+    /* ─── Reset button ────────────────────────────── */
+    .btn-reset {
+      background: linear-gradient(135deg, #bdbdbd, #9e9e9e);
+      color: white;
+      font-weight: 700;
+      font-size: 0.88rem;
+      padding: 0.6rem 1.6rem;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      transition: opacity 0.2s;
+      box-shadow: none;
+    }
+    .btn-reset:hover { opacity: 0.85; }
+
+    /* Delay helpers */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.45s; }
+  </style>
+</head>
+<body>
+
+<!-- Floating particles (global, behind everything) -->
+<div id="particles" style="position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE 1 — THE QUESTION
+═══════════════════════════════════════════════════════════ -->
+<div class="page active" id="page-question">
+  <div class="glass-card p-10 max-w-md w-full text-center z-10">
+    <div class="text-8xl mb-6 heart-pulse">💕</div>
+    <h1 class="text-5xl font-black text-pink-600 mb-2 fade-in-up">Дони,</h1>
+    <p class="text-2xl font-bold text-pink-500 mb-3 fade-in-up delay-1">
+      ще излезеш ли на среща с мен?
+    </p>
+    <p class="text-gray-400 mb-10 text-sm italic leading-relaxed fade-in-up delay-2">
+      3 месеца с теб и всеки ден все още ми палиш сърцето… 🥺<br />
+      Означаваш всичко за мен. ✨
+    </p>
+
+    <div class="flex flex-col items-center gap-5 fade-in-up delay-3">
+      <button class="btn-yes float-bounce" id="yes-btn" onclick="goToPageYes()">
+        Да, с удоволствие! 💖
+      </button>
+      <!-- Invisible anchor – used only to place the "No" button initially -->
+      <div id="no-btn-ref"
+           style="height:46px;visibility:hidden;padding:0.75rem 1.85rem;font-size:0.95rem;white-space:nowrap;">
+        Не, благодаря 🙈
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE 2 — SHE SAID YES!
+═══════════════════════════════════════════════════════════ -->
+<div class="page" id="page-yes">
+  <div class="glass-card p-10 max-w-md w-full text-center z-10">
+    <div class="text-7xl mb-6" id="yes-emoji">🎉</div>
+    <h2 class="text-3xl font-black text-pink-600 mb-4 fade-in-up">
+      Боже мой, каза ДА!
+    </h2>
+    <p class="text-xl text-pink-400 font-bold mb-3 fade-in-up delay-1">
+      3 месеца заедно и пак ме караш да се усмихвам така… 😭💕
+    </p>
+    <p class="text-gray-400 mb-10 leading-relaxed fade-in-up delay-2">
+      Всеки ден с теб е по-добър от предишния! 💕<br />
+      Нека планираме най-перфектната среща да отпразнуваме! ✨
+    </p>
+    <button class="btn-next float-bounce fade-in-up delay-3" onclick="goToPageDateTime()">
+      Нека планираме срещата 📅 →
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE 3 — DATE & TIME PICKER
+═══════════════════════════════════════════════════════════ -->
+<div class="page" id="page-datetime">
+  <div class="glass-card p-10 max-w-md w-full text-center z-10">
+    <div class="text-6xl mb-5 float-bounce">📅</div>
+    <h2 class="text-3xl font-black text-pink-600 mb-2 fade-in-up">Кога да се видим?</h2>
+    <p class="text-gray-400 mb-8 italic text-sm fade-in-up delay-1">
+      Избери дата и час за нашата специална вечер ✨
+    </p>
+
+    <div class="text-left space-y-5 mb-9 fade-in-up delay-2">
+      <div>
+        <label class="block text-pink-600 font-bold mb-2 text-sm uppercase tracking-wider">
+          📆 &nbsp;Дата
+        </label>
+        <input type="date" id="dateInput" class="date-input" />
+      </div>
+      <div>
+        <label class="block text-pink-600 font-bold mb-2 text-sm uppercase tracking-wider">
+          ⏰ &nbsp;Час
+        </label>
+        <input type="time" id="timeInput" class="date-input" />
+      </div>
+    </div>
+
+    <button class="btn-next w-full fade-in-up delay-3" onclick="goToPageFood()">
+      Напред — Избери храната 🍽️
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE 4 — FOOD SELECTION
+═══════════════════════════════════════════════════════════ -->
+<div class="page" id="page-food">
+  <div class="z-10 max-w-lg w-full">
+    <div class="glass-card p-8">
+      <div class="text-center mb-6">
+        <div class="text-5xl mb-3 float-bounce">🍽️</div>
+        <h2 class="text-3xl font-black text-pink-600 mb-1 fade-in-up">Какво ще хапнем?</h2>
+        <p class="text-gray-400 text-sm italic fade-in-up delay-1">
+          Избери любимото си — аз ще се погрижа 💕
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mb-7 fade-in-up delay-2" id="foodGrid">
+        <!-- Filled by JS -->
+      </div>
+
+      <button class="btn-next w-full fade-in-up delay-3" onclick="confirmDate()" style="display:block;">
+        Потвърди срещата! 💖
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE 5 — IT'S A DATE! (post-confirmation)
+═══════════════════════════════════════════════════════════ -->
+<div class="page" id="page-done">
+  <div class="glass-card p-10 max-w-md w-full text-center z-10">
+    <div class="text-7xl mb-5 heart-pulse">💕</div>
+    <h2 class="text-3xl font-black text-pink-600 mb-3 fade-in-up">Имаме среща!</h2>
+    <p class="text-pink-400 font-semibold mb-8 fade-in-up delay-1">
+      3 месеца са само началото… 🥺✨
+    </p>
+
+    <div class="space-y-3 mb-8 fade-in-up delay-2 text-left" id="doneSummary">
+      <!-- Filled by JS -->
+    </div>
+
+    <p class="text-gray-400 text-xs italic mb-5 fade-in-up delay-3">
+      3 месеца заедно и най-доброто тепърва предстои! 💕
+    </p>
+    <button class="btn-reset fade-in-up delay-4" onclick="resetAll()">
+      Започни отначало 🔄
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE 6 — SAVED SUMMARY (shown on return visit)
+═══════════════════════════════════════════════════════════ -->
+<div class="page" id="page-saved">
+  <div class="glass-card p-10 max-w-md w-full text-center z-10 fade-in-up">
+    <div class="text-6xl mb-5 heart-pulse">💕</div>
+    <h2 class="text-3xl font-black text-pink-600 mb-2">Нашите Планове за Среща</h2>
+    <p class="text-pink-400 font-semibold mb-7">Дони вече направи своя избор! 🥰</p>
+
+    <div class="space-y-3 mb-8 text-left" id="savedSummary">
+      <!-- Filled by JS -->
+    </div>
+
+    <button class="btn-reset" onclick="resetAll()">
+      Промени плановете 🔄
+    </button>
+  </div>
+</div>
+
+<!-- The fleeing No button (global, positioned by JS) -->
+<button id="no-btn" onclick="noBtnClicked()">Не, благодаря 🙈</button>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCRIPT
+═══════════════════════════════════════════════════════════ -->
+<script>
+  /* ─── Constants ────────────────────────────────── */
+  const STORAGE_KEY = 'doni_date_v2';
+
+  const FOODS = [
+    { id: 'pizza',      emoji: '🍕', label: 'Пица',              note: 'Класика и вкуснотия'      },
+    { id: 'burgers',    emoji: '🍔', label: 'Бургери',           note: 'Сочни и засищащи'         },
+    { id: 'sushi',      emoji: '🍣', label: 'Суши',              note: 'Свежо и елегантно'        },
+    { id: 'sandwiches', emoji: '🥪', label: 'Сандвичи',          note: 'Леко и вкусно'            },
+    { id: 'bbq',        emoji: '🔥', label: 'Барбекю',           note: 'Пушено и страхотно'       },
+    { id: 'bulgarian',  emoji: '🥘', label: 'Българска Кухня',   note: 'Баница, кебапчета...'     },
+  ];
+
+  let selectedFood = null;
+  let noBtnOrigin   = { x: 0, y: 0 };
+
+  /* ─── Utility ──────────────────────────────────── */
+  function formatDate(s) {
+    if (!s) return '—';
+    const [y, m, d] = s.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('bg-BG', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    });
+  }
+
+  function formatTime(s) {
+    if (!s) return '—';
+    return s + ' ч.';
+  }
+
+  function buildSummaryHTML(data) {
+    const food = FOODS.find(f => f.id === data.food) || { emoji: '🍽️', label: data.food };
+    const rows = [
+      { icon: '📆', title: 'Дата',         value: formatDate(data.date) },
+      { icon: '⏰', title: 'Час',           value: formatTime(data.time) },
+      { icon: food.emoji, title: 'Ще хапнем',       value: food.label   },
+    ];
+    return rows.map(r => `
+      <div class="summary-row">
+        <span class="text-3xl">${r.icon}</span>
+        <div>
+          <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">${r.title}</p>
+          <p class="text-base text-pink-700 font-bold">${r.value}</p>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /* ─── Page navigation ──────────────────────────── */
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const page = document.getElementById(id);
+    page.classList.add('active');
+
+    // Hide the No button when leaving page-question
+    const noBtn = document.getElementById('no-btn');
+    if (id !== 'page-question') {
+      noBtn.style.display    = 'none';
+      noBtn.style.visibility = 'hidden';
+    }
+
+    // Card entrance animation
+    const card = page.querySelector('.glass-card');
+    if (card) {
+      card.classList.remove('page-in');
+      void card.offsetWidth; // force reflow
+      card.classList.add('page-in');
+    }
+  }
+
+  function goToPageYes() {
+    showPage('page-yes');
+    launchConfetti();
+    // Cycle celebration emojis
+    const emojis = ['🎉', '🥳', '💕', '🎊', '😍', '💖', '✨', '🌸', '😭', '❤️'];
+    let i = 0;
+    const iv = setInterval(() => {
+      const el = document.getElementById('yes-emoji');
+      if (!el || !document.getElementById('page-yes').classList.contains('active')) {
+        clearInterval(iv); return;
+      }
+      el.textContent = emojis[i++ % emojis.length];
+    }, 480);
+  }
+
+  function goToPageDateTime() { showPage('page-datetime'); }
+
+  function goToPageFood() {
+    const date = document.getElementById('dateInput').value;
+    const time = document.getElementById('timeInput').value;
+    if (!date) { shakeInput('dateInput'); showToast('Моля, избери дата първо! 📆'); return; }
+    if (!time) { shakeInput('timeInput'); showToast('Моля, избери час първо! ⏰'); return; }
+    initFoodGrid();
+    showPage('page-food');
+  }
+
+  function confirmDate() {
+    if (!selectedFood) { showToast('Моля, избери какво искаш да хапнеш! 🍽️'); return; }
+    const date = document.getElementById('dateInput').value;
+    const time = document.getElementById('timeInput').value;
+    const data = { date, time, food: selectedFood };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    document.getElementById('doneSummary').innerHTML = buildSummaryHTML(data);
+    showPage('page-done');
+    launchConfetti();
+  }
+
+  function resetAll() {
+    localStorage.removeItem(STORAGE_KEY);
+    selectedFood = null;
+    document.getElementById('dateInput').value = '';
+    document.getElementById('timeInput').value = '';
+    showPage('page-question');
+    setTimeout(initNoButton, 180);
+  }
+
+  /* ─── Fleeing "No" button ──────────────────────── */
+  function initNoButton() {
+    const noBtn = document.getElementById('no-btn');
+    const ref   = document.getElementById('no-btn-ref');
+    if (!noBtn || !ref) return;
+
+    // Measure the button while it's off-screen
+    noBtn.style.visibility = 'hidden';
+    noBtn.style.display    = 'block';
+
+    // Wait one frame so the browser computes dimensions
+    requestAnimationFrame(() => {
+      const bw   = noBtn.offsetWidth  || 130;
+      const bh   = noBtn.offsetHeight || 46;
+      const rect = ref.getBoundingClientRect();
+      // Centre over the reference anchor
+      const x = rect.left + rect.width  / 2 - bw / 2;
+      const y = rect.top  + rect.height / 2 - bh / 2;
+      // Disable transition during initial snap-to-position
+      noBtn.style.transition = 'none';
+      noBtn.style.left = x + 'px';
+      noBtn.style.top  = y + 'px';
+      noBtn.style.visibility = 'visible';
+      // Store starting centre so movement stays nearby
+      noBtnOrigin = { x: x + bw / 2, y: y + bh / 2 };
+      // Re-enable smooth transition after the first paint
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        noBtn.style.transition = '';
+      }));
+    });
+  }
+
+  function moveNoButton(cursorX, cursorY) {
+    const noBtn = document.getElementById('no-btn');
+    if (!noBtn) return;
+    const bw  = noBtn.offsetWidth  || 130;
+    const bh  = noBtn.offsetHeight || 46;
+    const pad = 16;
+    const rect = noBtn.getBoundingClientRect();
+    const btnCX = rect.left + bw / 2;
+    const btnCY = rect.top  + bh / 2;
+    // Direction directly away from the cursor
+    let dx = btnCX - cursorX;
+    let dy = btnCY - cursorY;
+    const len = Math.hypot(dx, dy) || 1;
+    dx /= len;  dy /= len;
+    let newX = btnCX + dx * 120 - bw / 2;
+    let newY = btnCY + dy * 120 - bh / 2;
+    newX = Math.max(pad, Math.min(window.innerWidth  - bw - pad, newX));
+    newY = Math.max(pad, Math.min(window.innerHeight - bh - pad, newY));
+    noBtn.style.left = newX + 'px';
+    noBtn.style.top  = newY + 'px';
+  }
+
+  function noBtnClicked() {
+    const msgs = ['Не! 😄', 'Опитай пак 😜', 'Добър опит! 😏', 'Хаха, не! 😂', 'Няма да стане 🙅'];
+    const noBtn = document.getElementById('no-btn');
+    noBtn.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+    // Flee away from the centre of the screen when tapped
+    moveNoButton(window.innerWidth / 2, window.innerHeight / 2);
+    setTimeout(() => { noBtn.textContent = 'Не, благодаря 🙈'; }, 1500);
+  }
+
+  // Mouse proximity – moves the button before the cursor ever reaches it
+  document.addEventListener('mousemove', e => {
+    if (!document.getElementById('page-question').classList.contains('active')) return;
+    const noBtn = document.getElementById('no-btn');
+    if (!noBtn || noBtn.style.display === 'none') return;
+    const rect = noBtn.getBoundingClientRect();
+    const cx = rect.left + rect.width  / 2;
+    const cy = rect.top  + rect.height / 2;
+    if (Math.hypot(e.clientX - cx, e.clientY - cy) < 130) moveNoButton(e.clientX, e.clientY);
+  });
+
+  // Touch support
+  document.addEventListener('touchmove', e => {
+    if (!document.getElementById('page-question').classList.contains('active')) return;
+    const t = e.touches[0];
+    const noBtn = document.getElementById('no-btn');
+    if (!noBtn) return;
+    const rect = noBtn.getBoundingClientRect();
+    if (Math.hypot(t.clientX - rect.left - rect.width/2, t.clientY - rect.top - rect.height/2) < 80) {
+      moveNoButton(t.clientX, t.clientY);
+    }
+  }, { passive: true });
+
+  /* ─── Food grid ────────────────────────────────── */
+  function initFoodGrid() {
+    const grid = document.getElementById('foodGrid');
+    grid.innerHTML = '';
+    FOODS.forEach(food => {
+      const card = document.createElement('div');
+      card.className = 'food-card' + (selectedFood === food.id ? ' selected' : '');
+      card.dataset.id = food.id;
+      card.innerHTML = `
+        <div class="check-badge">✓</div>
+        <div class="text-5xl mb-2">${food.emoji}</div>
+        <div class="font-bold text-gray-700 text-sm">${food.label}</div>
+        <div class="text-xs text-gray-400 mt-1">${food.note}</div>
+      `;
+      card.addEventListener('click', () => {
+        selectedFood = food.id;
+        document.querySelectorAll('.food-card').forEach(c =>
+          c.classList.toggle('selected', c.dataset.id === food.id)
+        );
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  /* ─── Confetti ─────────────────────────────────── */
+  function launchConfetti() {
+    const palette = ['#ff6b9d','#feca57','#48dbfb','#ff9ff3','#54a0ff','#ff6b6b','#ffeaa7','#a29bfe','#fd79a8'];
+    for (let i = 0; i < 110; i++) {
+      setTimeout(() => {
+        const el = document.createElement('div');
+        el.className = 'confetti-piece';
+        const size = Math.random() * 11 + 5;
+        el.style.cssText = `
+          left:${Math.random() * 100}vw;
+          top:-20px;
+          width:${size}px;
+          height:${size}px;
+          background:${palette[Math.floor(Math.random() * palette.length)]};
+          border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+          animation-duration:${Math.random() * 2.5 + 2}s;
+          animation-delay:${Math.random() * 1.2}s;
+          transform:rotate(${Math.random() * 360}deg);
+        `;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 5500);
+      }, i * 18);
+    }
+  }
+
+  /* ─── Floating background particles ───────────── */
+  function spawnParticles() {
+    const container = document.getElementById('particles');
+    const emojis    = ['💕','💖','💗','💓','✨','🌸','🌺','💫','⭐','🌷'];
+
+    function spawn() {
+      const el  = document.createElement('span');
+      el.className = 'particle';
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      const dur = Math.random() * 9 + 9;
+      el.style.cssText = `
+        left:${Math.random() * 100}vw;
+        bottom:-50px;
+        font-size:${Math.random() * 1.1 + 0.6}rem;
+        animation-duration:${dur}s;
+        animation-delay:${Math.random() * 4}s;
+        opacity:${Math.random() * 0.45 + 0.2};
+      `;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), (dur + 5) * 1000);
+    }
+
+    for (let i = 0; i < 18; i++) setTimeout(spawn, i * 350);
+    setInterval(spawn, 750);
+  }
+
+  /* ─── Toast notification ───────────────────────── */
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
+  /* ─── Input shake ──────────────────────────────── */
+  function shakeInput(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('shake');
+    void el.offsetWidth;
+    el.classList.add('shake');
+    setTimeout(() => el.classList.remove('shake'), 500);
+  }
+
+  /* ─── Boot ─────────────────────────────────────── */
+  window.addEventListener('DOMContentLoaded', () => {
+    spawnParticles();
+
+    // Check for saved choices
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      if (saved && saved.date && saved.time && saved.food) {
+        document.getElementById('savedSummary').innerHTML = buildSummaryHTML(saved);
+        showPage('page-saved');
+        return;
+      }
+    } catch (_) {}
+
+    showPage('page-question');
+    setTimeout(initNoButton, 200);
+  });
+</script>
+</body>
+</html>
