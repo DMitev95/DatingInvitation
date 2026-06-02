@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <style src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -409,6 +410,12 @@
     <p class="text-gray-400 text-xs italic mb-5 fade-in-up delay-3">
       3 месеца заедно и най-доброто тепърва предстои! 💕
     </p>
+
+    <div class="fade-in-up delay-4 mb-5">
+      <p class="text-pink-500 font-bold text-sm mb-3">📱 Сканирай с телефона за споделяне</p>
+      <div id="qr-done" class="flex justify-center"></div>
+    </div>
+
     <button class="btn-reset fade-in-up delay-4" onclick="resetAll()">
       Започни отначало 🔄
     </button>
@@ -426,6 +433,11 @@
 
     <div class="space-y-3 mb-8 text-left" id="savedSummary">
       <!-- Filled by JS -->
+    </div>
+
+    <div class="mb-5">
+      <p class="text-pink-500 font-bold text-sm mb-3">📱 Сканирай с телефона за споделяне</p>
+      <div id="qr-saved" class="flex justify-center"></div>
     </div>
 
     <button class="btn-reset" onclick="resetAll()">
@@ -512,6 +524,7 @@
   }
 
   function goToPageYes() {
+    saveState('page-yes');
     showPage('page-yes');
     launchConfetti();
     // Cycle celebration emojis
@@ -526,13 +539,14 @@
     }, 480);
   }
 
-  function goToPageDateTime() { showPage('page-datetime'); }
+  function goToPageDateTime() { saveState('page-datetime'); showPage('page-datetime'); }
 
   function goToPageFood() {
     const date = document.getElementById('dateInput').value;
     const time = document.getElementById('timeInput').value;
     if (!date) { shakeInput('dateInput'); showToast('Моля, избери дата първо! 📆'); return; }
     if (!time) { shakeInput('timeInput'); showToast('Моля, избери час първо! ⏰'); return; }
+    saveState('page-food');
     initFoodGrid();
     showPage('page-food');
   }
@@ -541,15 +555,18 @@
     if (!selectedFood) { showToast('Моля, избери какво искаш да хапнеш! 🍽️'); return; }
     const date = document.getElementById('dateInput').value;
     const time = document.getElementById('timeInput').value;
-    const data = { date, time, food: selectedFood };
+    const data = { page: 'page-done', date, time, food: selectedFood };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    encodeToHash(data);
     document.getElementById('doneSummary').innerHTML = buildSummaryHTML(data);
     showPage('page-done');
     launchConfetti();
+    setTimeout(() => generateQR('qr-done'), 300);
   }
 
   function resetAll() {
     localStorage.removeItem(STORAGE_KEY);
+    history.replaceState(null, '', window.location.pathname + window.location.search);
     selectedFood = null;
     document.getElementById('dateInput').value = '';
     document.getElementById('timeInput').value = '';
@@ -737,20 +754,87 @@
     setTimeout(() => el.classList.remove('shake'), 500);
   }
 
+  /* ─── State persistence & cross-browser sync ─────── */
+  function saveState(page) {
+    const state = {
+      page,
+      date: document.getElementById('dateInput').value || '',
+      time: document.getElementById('timeInput').value || '',
+      food: selectedFood || null,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function encodeToHash(data) {
+    try {
+      history.replaceState(null, '', '#' + btoa(JSON.stringify(data)));
+    } catch (_) {}
+  }
+
+  function generateQR(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    const url = window.location.href;
+    QRCode.toCanvas(url, { width: 160, margin: 1, color: { dark: '#9d174d', light: '#fff0f6' } }, (err, canvas) => {
+      if (err) return;
+      canvas.style.borderRadius = '12px';
+      canvas.style.boxShadow = '0 4px 18px rgba(236,64,122,0.25)';
+      container.appendChild(canvas);
+    });
+  }
+
+  function decodeFromHash() {
+    try {
+      const hash = window.location.hash.slice(1);
+      if (!hash) return null;
+      return JSON.parse(atob(hash));
+    } catch (_) { return null; }
+  }
+
+  function restoreState(state) {
+    if (!state || !state.page) return false;
+    if (state.date) document.getElementById('dateInput').value = state.date;
+    if (state.time) document.getElementById('timeInput').value = state.time;
+    if (state.food) selectedFood = state.food;
+
+    if ((state.page === 'page-done' || state.page === 'page-saved') && state.date && state.time && state.food) {
+      document.getElementById('savedSummary').innerHTML = buildSummaryHTML(state);
+      showPage('page-saved');
+      setTimeout(() => generateQR('qr-saved'), 300);
+      return true;
+    }
+    if (state.page === 'page-food' && state.date && state.time) {
+      initFoodGrid();
+      showPage('page-food');
+      return true;
+    }
+    if (state.page === 'page-datetime') {
+      showPage('page-datetime');
+      return true;
+    }
+    if (state.page === 'page-yes') {
+      showPage('page-yes');
+      return true;
+    }
+    return false;
+  }
+
   /* ─── Boot ─────────────────────────────────────── */
   window.addEventListener('DOMContentLoaded', () => {
     spawnParticles();
 
-    // Check for saved choices
+    // 1. Check URL hash — enables cross-browser / cross-device sharing
+    const hashState = decodeFromHash();
+    if (hashState && restoreState(hashState)) return;
+
+    // 2. Check localStorage — restores progress after page refresh
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-      if (saved && saved.date && saved.time && saved.food) {
-        document.getElementById('savedSummary').innerHTML = buildSummaryHTML(saved);
-        showPage('page-saved');
-        return;
-      }
+      if (saved && restoreState(saved)) return;
     } catch (_) {}
 
+    // 3. Fresh start
     showPage('page-question');
     setTimeout(initNoButton, 200);
   });
