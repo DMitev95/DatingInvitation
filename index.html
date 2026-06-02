@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <style src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -776,12 +776,22 @@
     if (!container) return;
     container.innerHTML = '';
     const url = window.location.href;
-    QRCode.toCanvas(url, { width: 160, margin: 1, color: { dark: '#9d174d', light: '#fff0f6' } }, (err, canvas) => {
-      if (err) return;
-      canvas.style.borderRadius = '12px';
-      canvas.style.boxShadow = '0 4px 18px rgba(236,64,122,0.25)';
-      container.appendChild(canvas);
+    const qr = new QRCode(container, {
+      text: url,
+      width: 160,
+      height: 160,
+      colorDark: '#9d174d',
+      colorLight: '#fff0f6',
+      correctLevel: QRCode.CorrectLevel.M,
     });
+    // Style the generated canvas/img
+    setTimeout(() => {
+      const el = container.querySelector('canvas') || container.querySelector('img');
+      if (el) {
+        el.style.borderRadius = '12px';
+        el.style.boxShadow = '0 4px 18px rgba(236,64,122,0.25)';
+      }
+    }, 100);
   }
 
   function decodeFromHash() {
