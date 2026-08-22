@@ -293,11 +293,11 @@
     <div class="text-8xl mb-6 heart-pulse">💕</div>
     <h1 class="text-5xl font-black text-pink-600 mb-2 fade-in-up">Дони,</h1>
     <p class="text-2xl font-bold text-pink-500 mb-3 fade-in-up delay-1">
-      3 месеца по-късно и все още се вълнувам за всяка среща с теб. ❤️<br />
+      <span class="months-phrase">3 месеца</span> по-късно и все още се вълнувам за всяка среща с теб. ❤️<br />
       Ще ми позволиш ли да те изведа на още една незабравима среща? ❤️
     </p>
     <p class="text-gray-400 mb-10 text-sm italic leading-relaxed fade-in-up delay-2">
-      3 месеца с теб и всеки ден все още ми палиш сърцето… 🔥<br />
+      <span class="months-phrase">3 месеца</span> с теб и всеки ден все още ми палиш сърцето… 🔥<br />
       Означаваш всичко за мен. ✨
     </p>
 
@@ -324,7 +324,7 @@
       Боже мой, каза ДА!
     </h2>
     <p class="text-xl text-pink-400 font-bold mb-3 fade-in-up delay-1">
-      3 месеца заедно и пак ме караш да се усмихвам така… 😍💕
+      <span class="months-phrase">3 месеца</span> заедно и пак ме караш да се усмихвам така… 😍💕
     </p>
     <p class="text-gray-400 mb-10 leading-relaxed fade-in-up delay-2">
       Всеки ден с теб е по-добър от предишния! 💕<br />
@@ -401,7 +401,7 @@
     <div class="text-7xl mb-5 heart-pulse">💕</div>
     <h2 class="text-3xl font-black text-pink-600 mb-3 fade-in-up">Имаме среща!</h2>
     <p class="text-pink-400 font-semibold mb-8 fade-in-up delay-1">
-      3 месеца са само началото… 💫✨
+      <span class="months-phrase">3 месеца</span> са само началото… 💫✨
     </p>
 
     <div class="space-y-3 mb-8 fade-in-up delay-2 text-left" id="doneSummary">
@@ -409,7 +409,7 @@
     </div>
 
     <p class="text-gray-400 text-xs italic mb-5 fade-in-up delay-3">
-      3 месеца заедно и най-доброто тепърва предстои! 💕
+      <span class="months-phrase">3 месеца</span> заедно и най-доброто тепърва предстои! 💕
     </p>
 
     <div class="fade-in-up delay-4 mb-5">
@@ -457,6 +457,30 @@
 <script>
   /* ─── Constants ────────────────────────────────── */
   const STORAGE_KEY = 'doni_date_v2';
+
+  // Начало на връзката — 18 март 2026 (месеците се обновяват автоматично)
+  const RELATIONSHIP_START = new Date(2026, 2, 18);
+
+  /* ─── Automatic month counter ──────────────────── */
+  function monthsSince(start) {
+    const now = new Date();
+    let months = (now.getFullYear() - start.getFullYear()) * 12
+               + (now.getMonth() - start.getMonth());
+    // Ако още не е достигнат денят от месеца, месецът не е навършен
+    if (now.getDate() < start.getDate()) months--;
+    return Math.max(0, months);
+  }
+
+  function monthsPhrase() {
+    const n = monthsSince(RELATIONSHIP_START);
+    const word = n === 1 ? 'месец' : 'месеца';
+    return n + ' ' + word;
+  }
+
+  function updateMonthsPhrases() {
+    const phrase = monthsPhrase();
+    document.querySelectorAll('.months-phrase').forEach(el => el.textContent = phrase);
+  }
 
   const FOODS = [
     { id: 'pizza',      emoji: '🍕', label: 'Пица',              note: 'Класика и вкуснотия'      },
@@ -834,6 +858,7 @@
   /* ─── Boot ─────────────────────────────────────── */
   window.addEventListener('DOMContentLoaded', () => {
     spawnParticles();
+    updateMonthsPhrases();
 
     // 1. Check URL hash — enables cross-browser / cross-device sharing
     const hashState = decodeFromHash();
