@@ -472,9 +472,18 @@
   }
 
   function monthsPhrase() {
-    const n = monthsSince(RELATIONSHIP_START);
-    const word = n === 1 ? 'месец' : 'месеца';
-    return n + ' ' + word;
+    const total  = monthsSince(RELATIONSHIP_START);
+    const years  = Math.floor(total / 12);
+    const months = total % 12;
+
+    const parts = [];
+    if (years > 0) {
+      parts.push(years + ' ' + (years === 1 ? 'година' : 'години'));
+    }
+    if (months > 0 || years === 0) {
+      parts.push(months + ' ' + (months === 1 ? 'месец' : 'месеца'));
+    }
+    return parts.join(' и ');
   }
 
   function updateMonthsPhrases() {
